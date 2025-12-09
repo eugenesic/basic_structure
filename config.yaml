@@ -1,0 +1,5 @@
+symbol: BTCUSDT
+data_path: data/btc_1h.csv
+risk_percent: 1.0
+equity: 10000
+
