@@ -35,20 +35,20 @@ async def main():
     # === Основной цикл ===
     print("[MAIN] Entering main loop")
     equity = Decimal('10000')
-    async for candle in market_data.subscribe("BTCUSDT"):
-        print(f"[MAIN] New candle: ts={candle.timestamp}, close={candle.close}")
-        position_size = position_manager.get_position_size("BTCUSDT")
+    async for candle in market_data.subscribe("BTCUSDT"): # Отсюда берутся свечи, market_data — это CSVMarketData("data/btc_1h.csv").
+        print(f"[MAIN] New candle: ts={candle.timestamp}, close={candle.close}") # Логгирует свечу
+        position_size = position_manager.get_position_size("BTCUSDT") # Берёт текущий размер позиции из SimplePositionManager.
         print(f"[MAIN] Current position size: {position_size}")
 
         # Стратегия могла сгенерировать сигнал внутри on_candle
         print("[MAIN] Calling strategy.on_candle")
-        signal = await strategy.on_candle(candle, None, position_size)
+        signal = await strategy.on_candle(candle, None, position_size) # Вызывает стратегию напрямую
 
-        if signal:
+        if signal: # Если есть signal
             print(f"[MAIN] Strategy produced signal: {signal}")
-            await bus.publish("signal_generated", signal)
+            await bus.publish("signal_generated", signal) # Публикует событие signal_generated в EventBus (это нужно только, чтобы логгер увидел сигнал)
             print("[MAIN] Passing signal to risk manager")
-            approved = risk.approve(signal, equity, position_manager.get_position_size("BTCUSDT"))
+            approved = risk.approve(signal, equity, position_manager.get_position_size("BTCUSDT")) # Передаёт сигнал в риск‑менеджер
             if approved:
                 print(f"[MAIN] Risk manager approved signal: {approved}")
                 await bus.publish("signal_approved", approved)
